@@ -1,5 +1,6 @@
 import { Exclude, Expose } from "class-transformer";
 import { BeforeInsert, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { makeid } from "../../utils/helpers";
 import BaseEntity from './Entity';
 import Post from "./Post";
 import { User } from "./User";
@@ -42,5 +43,10 @@ export default class Comment extends BaseEntity {
         const initialValue = 0
         return this.votes?.reduce((previousValue, currentObject) =>
             previousValue + (currentObject.value || 0), initialValue)
+    }
+
+    @BeforeInsert()
+    makeId() {
+        this.identifier = makeid(8);
     }
 }
