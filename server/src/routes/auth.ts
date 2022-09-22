@@ -76,11 +76,16 @@ const login = async (req: Request, res: Response) => {
         }
 
         //쿠키저장
-    console.log("cookie start : " + process.env.JWT_SECRET)
         const token = jwt.sign({ username }, process.env.JWT_SECRET)
-        console.log("token " + token)
-        res.set("Set-Cookie", cookie.serialize("token", token))
-        console.log("cookie end ")
+
+        res.set(
+            "Set-Cookie",
+            cookie.serialize("token", token, {
+                httpOnly: true,
+                maxAge: 60 * 60 * 24 * 7, //1week
+                path: "/",
+            })
+        );
 
         return res.json({ user, token })
     } catch (error) {
