@@ -1,6 +1,9 @@
-import { validate } from "class-validator";
+import { isEmpty, validate } from "class-validator";
 import { Request, Response, Router } from "express";
 import { User } from "../entities/User";
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken";
+import cookie from "cookie"
 
 const mapErrors = (errors: Object[]) => {
     return errors.reduce((prev: any, err: any) => {
@@ -18,10 +21,10 @@ const register = async (req: Request, res: Response) => {
 
         //이메일과 유저이름이 이미 저장 사용되고 있는 것인지 확인.
         const emailUser = await User.findOneBy({ email })
-        const userNameUser = await User.findOneBy({ username })
+        const usernameUser = await User.findOneBy({ username })
 
         if (emailUser) errors.email = "이미 해당 이메일 주소가 사용되었습니다."
-        if (userNameUser) errors.userName = "이미 이 사용자 이름이 사용되었습니다."
+        if (usernameUser) errors.username = "이미 이 사용자 이름이 사용되었습니다."
 
         if (Object.keys(errors).length > 0) {
             return res.status(400).json(errors)
@@ -44,11 +47,51 @@ const register = async (req: Request, res: Response) => {
         return res.status(500).json({ error })
 
     }
+}
+const login = async (req: Request, res: Response) => {
+    const { username, password } = req.body
+    console.log(username, password)
 
+    try {
+        let errors: any = {};
 
+        //유효성 검증
+        if (isEmpty(username)) errors.username = "사용자 이름은 비워둘 수 없습니다."
+        if (isEmpty(password)) errors.password = "비밀번호는 비워둘 수 없습니다."
+
+        if (Object.keys(errors).length > 0) {
+            return res.status(400).json(errors)
+        }
+
+        //유저 찾기
+        const user = await User.findOneBy({ username })
+
+        if (!user) return res.status(400).json({ username: "사용자 이름이 등록되지 않았습니다." })
+
+        //비번 비교
+        const passwordMatches = await bcrypt.compare(password, user.password)
+
+        if (!passwordMatches) {
+            return res.status(400).json({ password: "비밀번호가 잘못되었습니다." })
+        }
+
+        //쿠키저장
+    console.log("cookie start : " + process.env.JWT_SECRET)
+        const token = jwt.sign({ username }, process.env.JWT_SECRET)
+        console.log("token " + token)
+        res.set("Set-Cookie", cookie.serialize("token", token))
+        console.log("cookie end ")
+
+        return res.json({ user, token })
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({ error })
+
+    }
 }
 
 const router = Router()
 router.post("/register", register)
+router.post("/login", login)
 
 export default router
