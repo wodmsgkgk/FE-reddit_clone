@@ -3,7 +3,7 @@ import InputGroup from '../components/InputGroup'
 import Link from 'next/link'
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { useAuthDispatch } from '../routes/auth';
+import { useAuthDispatch } from '../context/auth';
 
 const Login = () => {
     let router = useRouter();
