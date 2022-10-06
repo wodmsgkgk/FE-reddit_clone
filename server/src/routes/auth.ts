@@ -120,6 +120,6 @@ const router = Router()
 router.post("/register", register)
 router.post("/login", login)
 router.post("/logout", userMiddleWare, authMiddleWare, logout)
-router.post("/me", userMiddleWare, authMiddleWare, me)
+router.get("/me", userMiddleWare, authMiddleWare, me)
 
 export default router
