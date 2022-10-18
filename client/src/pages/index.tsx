@@ -3,8 +3,18 @@ import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
 import styles from '../styles/Home.module.css'
+import useSWR from 'swr'
+import { Sub } from '../types'
+import axios from 'axios'
 
 const Home: NextPage = () => {
+
+  const fetcher = async (url: string) => {
+    return await axios.get(url).then(res => res.data)
+  }
+  const address = "http://localhost:4000/api/subs/sub/topSubs"
+  const { data: topSubs } = useSWR<Sub[]>(address, fetcher)
+
   return (
     <div className='flex max-w-5xl px-4 pt-5 mx-auto'>
       {/* 포스트 리스트 */}
